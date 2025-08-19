@@ -1,232 +1,252 @@
 
 import './App.css';
 
-import React, { useState, useEffect } from 'react';
-import { BookOpen, Award, Trophy, Star, CheckCircle, XCircle, RotateCcw, Download } from 'lucide-react';
+import React, { useState } from 'react';
+import { BookOpen, Award, Trophy, Star, Crown, CheckCircle, XCircle, RotateCcw, Download } from 'lucide-react';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
 
 // Mock GPT API for generating questions
+
+// Calls your Vercel function at /api/generate-questions
 const generateQuestions = async (level) => {
-  const questionSets = {
-    beginner: [
-      {
-        id: 1,
-        question: "What is the correct way to print 'Hello World' in Python?",
-        options: ["echo('Hello World')", "print('Hello World')", "console.log('Hello World')", "println('Hello World')"],
-        correct: 1,
-        explanation: "print() is the built-in function in Python to display output."
-      },
-      {
-        id: 2,
-        question: "Which of these is a valid Python variable name?",
-        options: ["2variable", "variable-name", "variable_name", "variable name"],
-        correct: 2,
-        explanation: "Python variable names can contain letters, numbers, and underscores, but cannot start with a number or contain spaces/hyphens."
-      },
-      {
-        id: 3,
-        question: "What data type is the value 42 in Python?",
-        options: ["string", "float", "int", "boolean"],
-        correct: 2,
-        explanation: "42 is an integer (int) in Python."
-      },
-      {
-        id: 4,
-        question: "How do you create a comment in Python?",
-        options: ["// This is a comment", "/* This is a comment */", "# This is a comment", "<!-- This is a comment -->"],
-        correct: 2,
-        explanation: "Python uses the # symbol for single-line comments."
-      },
-      {
-        id: 5,
-        question: "What will len('Python') return?",
-        options: ["5", "6", "7", "Error"],
-        correct: 1,
-        explanation: "len() returns the number of characters in a string. 'Python' has 6 characters."
-      },
-      {
-        id: 6,
-        question: "Which operator is used for exponentiation in Python?",
-        options: ["^", "**", "exp", "pow"],
-        correct: 1,
-        explanation: "** is the exponentiation operator in Python (e.g., 2**3 = 8)."
-      },
-      {
-        id: 7,
-        question: "What is the output of: print(type(3.14))?",
-        options: ["<class 'int'>", "<class 'float'>", "<class 'decimal'>", "<class 'number'>"],
-        correct: 1,
-        explanation: "3.14 is a floating-point number, so type() returns <class 'float'>."
-      },
-      {
-        id: 8,
-        question: "How do you get user input in Python?",
-        options: ["input()", "get()", "read()", "scanf()"],
-        correct: 0,
-        explanation: "input() is the built-in function to get user input in Python."
-      },
-      {
-        id: 9,
-        question: "What does the 'in' operator do?",
-        options: ["Imports a module", "Checks membership", "Defines a function", "Creates a loop"],
-        correct: 1,
-        explanation: "The 'in' operator checks if a value exists in a sequence (like a list or string)."
-      },
-      {
-        id: 10,
-        question: "Which method converts a string to lowercase?",
-        options: ["lower()", "lowercase()", "toLower()", "downcase()"],
-        correct: 0,
-        explanation: "The lower() method converts all characters in a string to lowercase."
-      }
-    ],
-    intermediate: [
-      {
-        id: 1,
-        question: "What is the output of: [1, 2, 3] + [4, 5, 6]?",
-        options: ["[5, 7, 9]", "[1, 2, 3, 4, 5, 6]", "Error", "[15]"],
-        correct: 1,
-        explanation: "The + operator concatenates lists in Python."
-      },
-      {
-        id: 2,
-        question: "What does list comprehension [x*2 for x in range(3)] produce?",
-        options: ["[0, 2, 4]", "[2, 4, 6]", "[0, 1, 2]", "[1, 2, 3]"],
-        correct: 0,
-        explanation: "range(3) gives [0,1,2], and x*2 gives [0,2,4]."
-      },
-      {
-        id: 3,
-        question: "Which is the correct way to handle exceptions?",
-        options: ["catch/throw", "try/except", "try/catch", "handle/error"],
-        correct: 1,
-        explanation: "Python uses try/except blocks for exception handling."
-      },
-      {
-        id: 4,
-        question: "What is a lambda function?",
-        options: ["A named function", "An anonymous function", "A class method", "A module function"],
-        correct: 1,
-        explanation: "Lambda functions are anonymous functions defined with the lambda keyword."
-      },
-      {
-        id: 5,
-        question: "What does the zip() function do?",
-        options: ["Compresses files", "Combines iterables", "Sorts lists", "Filters data"],
-        correct: 1,
-        explanation: "zip() combines multiple iterables element-wise into tuples."
-      },
-      {
-        id: 6,
-        question: "What is the difference between '==' and 'is'?",
-        options: ["No difference", "== checks value, is checks identity", "== checks identity, is checks value", "Both are deprecated"],
-        correct: 1,
-        explanation: "== compares values for equality, while 'is' checks if two variables refer to the same object."
-      },
-      {
-        id: 7,
-        question: "What does *args allow in a function?",
-        options: ["Keyword arguments", "Variable number of arguments", "Default arguments", "Type hints"],
-        correct: 1,
-        explanation: "*args allows a function to accept a variable number of positional arguments."
-      },
-      {
-        id: 8,
-        question: "Which data structure is mutable?",
-        options: ["tuple", "string", "list", "frozenset"],
-        correct: 2,
-        explanation: "Lists are mutable (can be changed), while tuples, strings, and frozensets are immutable."
-      },
-      {
-        id: 9,
-        question: "What is a decorator in Python?",
-        options: ["A design pattern", "A function modifier", "A class attribute", "A loop construct"],
-        correct: 1,
-        explanation: "Decorators are functions that modify or enhance other functions."
-      },
-      {
-        id: 10,
-        question: "What does the enumerate() function return?",
-        options: ["Just indices", "Just values", "Index-value pairs", "Sorted values"],
-        correct: 2,
-        explanation: "enumerate() returns pairs of (index, value) for each item in an iterable."
-      }
-    ],
-    advanced: [
-      {
-        id: 1,
-        question: "What is the Global Interpreter Lock (GIL)?",
-        options: ["A thread synchronization mechanism", "A memory management tool", "A debugging feature", "A package manager"],
-        correct: 0,
-        explanation: "GIL is a mutex that protects access to Python objects, preventing multiple threads from executing Python bytecode simultaneously."
-      },
-      {
-        id: 2,
-        question: "What is the purpose of __slots__ in a class?",
-        options: ["Define methods", "Restrict attributes and save memory", "Create inheritance", "Handle exceptions"],
-        correct: 1,
-        explanation: "__slots__ restricts which attributes can be added to instances and reduces memory usage."
-      },
-      {
-        id: 3,
-        question: "What does the @property decorator do?",
-        options: ["Creates class variables", "Makes methods act like attributes", "Defines static methods", "Handles inheritance"],
-        correct: 1,
-        explanation: "@property allows methods to be accessed like attributes while maintaining getter/setter functionality."
-      },
-      {
-        id: 4,
-        question: "What is monkey patching?",
-        options: ["Debugging technique", "Dynamic modification of classes/modules", "Error handling", "Code optimization"],
-        correct: 1,
-        explanation: "Monkey patching is dynamically modifying a class or module at runtime."
-      },
-      {
-        id: 5,
-        question: "What is the difference between shallow and deep copy?",
-        options: ["No difference", "Shallow copies references, deep copies objects recursively", "Deep copies references, shallow copies objects", "Both create new objects"],
-        correct: 1,
-        explanation: "Shallow copy creates a new object but references to nested objects remain the same. Deep copy recursively copies all nested objects."
-      },
-      {
-        id: 6,
-        question: "What is a metaclass?",
-        options: ["A parent class", "A class that creates classes", "An abstract class", "A utility class"],
-        correct: 1,
-        explanation: "A metaclass is a class whose instances are classes themselves. It defines how classes are created."
-      },
-      {
-        id: 7,
-        question: "What does yield do in a function?",
-        options: ["Returns a value", "Creates a generator", "Raises an exception", "Defines a variable"],
-        correct: 1,
-        explanation: "yield makes a function a generator, allowing it to produce values lazily on demand."
-      },
-      {
-        id: 8,
-        question: "What is the purpose of asyncio?",
-        options: ["Threading", "Asynchronous programming", "Parallel processing", "Memory management"],
-        correct: 1,
-        explanation: "asyncio is a library for writing asynchronous, concurrent code using async/await syntax."
-      },
-      {
-        id: 9,
-        question: "What is a context manager?",
-        options: ["A design pattern for resource management", "A debugging tool", "A type of decorator", "A data structure"],
-        correct: 0,
-        explanation: "Context managers handle resource allocation and cleanup automatically using with statements."
-      },
-      {
-        id: 10,
-        question: "What does the __call__ method do?",
-        options: ["Calls other methods", "Makes objects callable like functions", "Handles inheritance", "Manages memory"],
-        correct: 1,
-        explanation: "__call__ allows an object to be called like a function by defining obj() behavior."
-      }
-    ]
-  };
-  
-  return questionSets[level] || [];
+  const res = await fetch(`/api/generate-questions?level=${encodeURIComponent(level)}`, {
+    method: 'GET',
+    headers: { 'Accept': 'application/json' }
+  });
+
+  if (!res.ok) {
+    // Bubble an error so the UI can show a message
+    throw new Error(`Failed to generate questions (HTTP ${res.status})`);
+  }
+
+  const data = await res.json();
+  return Array.isArray(data.questions) ? data.questions : [];
 };
+
+// const generateQuestions = async (level) => {
+//   const questionSets = {
+//     beginner: [
+//       {
+//         id: 1,
+//         question: "What is the correct way to print 'Hello World' in Python?",
+//         options: ["echo('Hello World')", "print('Hello World')", "console.log('Hello World')", "println('Hello World')"],
+//         correct: 1,
+//         explanation: "print() is the built-in function in Python to display output."
+//       },
+//       {
+//         id: 2,
+//         question: "Which of these is a valid Python variable name?",
+//         options: ["2variable", "variable-name", "variable_name", "variable name"],
+//         correct: 2,
+//         explanation: "Python variable names can contain letters, numbers, and underscores, but cannot start with a number or contain spaces/hyphens."
+//       },
+//       {
+//         id: 3,
+//         question: "What data type is the value 42 in Python?",
+//         options: ["string", "float", "int", "boolean"],
+//         correct: 2,
+//         explanation: "42 is an integer (int) in Python."
+//       },
+//       {
+//         id: 4,
+//         question: "How do you create a comment in Python?",
+//         options: ["// This is a comment", "/* This is a comment */", "# This is a comment", "<!-- This is a comment -->"],
+//         correct: 2,
+//         explanation: "Python uses the # symbol for single-line comments."
+//       },
+//       {
+//         id: 5,
+//         question: "What will len('Python') return?",
+//         options: ["5", "6", "7", "Error"],
+//         correct: 1,
+//         explanation: "len() returns the number of characters in a string. 'Python' has 6 characters."
+//       },
+//       {
+//         id: 6,
+//         question: "Which operator is used for exponentiation in Python?",
+//         options: ["^", "**", "exp", "pow"],
+//         correct: 1,
+//         explanation: "** is the exponentiation operator in Python (e.g., 2**3 = 8)."
+//       },
+//       {
+//         id: 7,
+//         question: "What is the output of: print(type(3.14))?",
+//         options: ["<class 'int'>", "<class 'float'>", "<class 'decimal'>", "<class 'number'>"],
+//         correct: 1,
+//         explanation: "3.14 is a floating-point number, so type() returns <class 'float'>."
+//       },
+//       {
+//         id: 8,
+//         question: "How do you get user input in Python?",
+//         options: ["input()", "get()", "read()", "scanf()"],
+//         correct: 0,
+//         explanation: "input() is the built-in function to get user input in Python."
+//       },
+//       {
+//         id: 9,
+//         question: "What does the 'in' operator do?",
+//         options: ["Imports a module", "Checks membership", "Defines a function", "Creates a loop"],
+//         correct: 1,
+//         explanation: "The 'in' operator checks if a value exists in a sequence (like a list or string)."
+//       },
+//       {
+//         id: 10,
+//         question: "Which method converts a string to lowercase?",
+//         options: ["lower()", "lowercase()", "toLower()", "downcase()"],
+//         correct: 0,
+//         explanation: "The lower() method converts all characters in a string to lowercase."
+//       }
+//     ],
+//     intermediate: [
+//       {
+//         id: 1,
+//         question: "What is the output of: [1, 2, 3] + [4, 5, 6]?",
+//         options: ["[5, 7, 9]", "[1, 2, 3, 4, 5, 6]", "Error", "[15]"],
+//         correct: 1,
+//         explanation: "The + operator concatenates lists in Python."
+//       },
+//       {
+//         id: 2,
+//         question: "What does list comprehension [x*2 for x in range(3)] produce?",
+//         options: ["[0, 2, 4]", "[2, 4, 6]", "[0, 1, 2]", "[1, 2, 3]"],
+//         correct: 0,
+//         explanation: "range(3) gives [0,1,2], and x*2 gives [0,2,4]."
+//       },
+//       {
+//         id: 3,
+//         question: "Which is the correct way to handle exceptions?",
+//         options: ["catch/throw", "try/except", "try/catch", "handle/error"],
+//         correct: 1,
+//         explanation: "Python uses try/except blocks for exception handling."
+//       },
+//       {
+//         id: 4,
+//         question: "What is a lambda function?",
+//         options: ["A named function", "An anonymous function", "A class method", "A module function"],
+//         correct: 1,
+//         explanation: "Lambda functions are anonymous functions defined with the lambda keyword."
+//       },
+//       {
+//         id: 5,
+//         question: "What does the zip() function do?",
+//         options: ["Compresses files", "Combines iterables", "Sorts lists", "Filters data"],
+//         correct: 1,
+//         explanation: "zip() combines multiple iterables element-wise into tuples."
+//       },
+//       {
+//         id: 6,
+//         question: "What is the difference between '==' and 'is'?",
+//         options: ["No difference", "== checks value, is checks identity", "== checks identity, is checks value", "Both are deprecated"],
+//         correct: 1,
+//         explanation: "== compares values for equality, while 'is' checks if two variables refer to the same object."
+//       },
+//       {
+//         id: 7,
+//         question: "What does *args allow in a function?",
+//         options: ["Keyword arguments", "Variable number of arguments", "Default arguments", "Type hints"],
+//         correct: 1,
+//         explanation: "*args allows a function to accept a variable number of positional arguments."
+//       },
+//       {
+//         id: 8,
+//         question: "Which data structure is mutable?",
+//         options: ["tuple", "string", "list", "frozenset"],
+//         correct: 2,
+//         explanation: "Lists are mutable (can be changed), while tuples, strings, and frozensets are immutable."
+//       },
+//       {
+//         id: 9,
+//         question: "What is a decorator in Python?",
+//         options: ["A design pattern", "A function modifier", "A class attribute", "A loop construct"],
+//         correct: 1,
+//         explanation: "Decorators are functions that modify or enhance other functions."
+//       },
+//       {
+//         id: 10,
+//         question: "What does the enumerate() function return?",
+//         options: ["Just indices", "Just values", "Index-value pairs", "Sorted values"],
+//         correct: 2,
+//         explanation: "enumerate() returns pairs of (index, value) for each item in an iterable."
+//       }
+//     ],
+//     advanced: [
+//       {
+//         id: 1,
+//         question: "What is the Global Interpreter Lock (GIL)?",
+//         options: ["A thread synchronization mechanism", "A memory management tool", "A debugging feature", "A package manager"],
+//         correct: 0,
+//         explanation: "GIL is a mutex that protects access to Python objects, preventing multiple threads from executing Python bytecode simultaneously."
+//       },
+//       {
+//         id: 2,
+//         question: "What is the purpose of __slots__ in a class?",
+//         options: ["Define methods", "Restrict attributes and save memory", "Create inheritance", "Handle exceptions"],
+//         correct: 1,
+//         explanation: "__slots__ restricts which attributes can be added to instances and reduces memory usage."
+//       },
+//       {
+//         id: 3,
+//         question: "What does the @property decorator do?",
+//         options: ["Creates class variables", "Makes methods act like attributes", "Defines static methods", "Handles inheritance"],
+//         correct: 1,
+//         explanation: "@property allows methods to be accessed like attributes while maintaining getter/setter functionality."
+//       },
+//       {
+//         id: 4,
+//         question: "What is monkey patching?",
+//         options: ["Debugging technique", "Dynamic modification of classes/modules", "Error handling", "Code optimization"],
+//         correct: 1,
+//         explanation: "Monkey patching is dynamically modifying a class or module at runtime."
+//       },
+//       {
+//         id: 5,
+//         question: "What is the difference between shallow and deep copy?",
+//         options: ["No difference", "Shallow copies references, deep copies objects recursively", "Deep copies references, shallow copies objects", "Both create new objects"],
+//         correct: 1,
+//         explanation: "Shallow copy creates a new object but references to nested objects remain the same. Deep copy recursively copies all nested objects."
+//       },
+//       {
+//         id: 6,
+//         question: "What is a metaclass?",
+//         options: ["A parent class", "A class that creates classes", "An abstract class", "A utility class"],
+//         correct: 1,
+//         explanation: "A metaclass is a class whose instances are classes themselves. It defines how classes are created."
+//       },
+//       {
+//         id: 7,
+//         question: "What does yield do in a function?",
+//         options: ["Returns a value", "Creates a generator", "Raises an exception", "Defines a variable"],
+//         correct: 1,
+//         explanation: "yield makes a function a generator, allowing it to produce values lazily on demand."
+//       },
+//       {
+//         id: 8,
+//         question: "What is the purpose of asyncio?",
+//         options: ["Threading", "Asynchronous programming", "Parallel processing", "Memory management"],
+//         correct: 1,
+//         explanation: "asyncio is a library for writing asynchronous, concurrent code using async/await syntax."
+//       },
+//       {
+//         id: 9,
+//         question: "What is a context manager?",
+//         options: ["A design pattern for resource management", "A debugging tool", "A type of decorator", "A data structure"],
+//         correct: 0,
+//         explanation: "Context managers handle resource allocation and cleanup automatically using with statements."
+//       },
+//       {
+//         id: 10,
+//         question: "What does the __call__ method do?",
+//         options: ["Calls other methods", "Makes objects callable like functions", "Handles inheritance", "Manages memory"],
+//         correct: 1,
+//         explanation: "__call__ allows an object to be called like a function by defining obj() behavior."
+//       }
+//     ]
+//   };
+  
+//   return questionSets[level] || [];
+// };
 
 const PythonTutoringSystem = () => {
   const [currentLevel, setCurrentLevel] = useState('');
@@ -238,7 +258,9 @@ const PythonTutoringSystem = () => {
   const [userAnswers, setUserAnswers] = useState([]);
   const [isComplete, setIsComplete] = useState(false);
   const [earnedBadge, setEarnedBadge] = useState(null);
-  const [userBadges, setUserBadges] = useState({ silver: false, gold: false, platinum: false });
+  //const [userBadges, setUserBadges] = useState({ silver: false, gold: false, platinum: false });
+  const [userBadges, setUserBadges] = useState({ silver: false, gold: false, platinum: false, genius: false });
+  const [bonusBadge, setBonusBadge] = useState(null); 
   const [loading, setLoading] = useState(false);
 
   const levelRequirements = {
@@ -257,9 +279,22 @@ const PythonTutoringSystem = () => {
     setShowResult(false);
     setEarnedBadge(null);
     
-    const generatedQuestions = await generateQuestions(level);
-    setQuestions(generatedQuestions);
-    setLoading(false);
+    // const generatedQuestions = await generateQuestions(level);
+    // setQuestions(generatedQuestions);
+    // setLoading(false);
+
+    try {
+   const generatedQuestions = await generateQuestions(level);
+   setQuestions(generatedQuestions);
+ } catch (err) {
+   console.error(err);
+   // Optional: show a nicer toast; for now an alert is fine
+   alert('Sorry—could not generate questions. Please try again.');
+   setQuestions([]); // keep UI stable
+ } finally {
+   setLoading(false);
+ }
+
   };
 
   const submitAnswer = () => {
@@ -298,17 +333,25 @@ const PythonTutoringSystem = () => {
     const level = currentLevel;
     const requirement = levelRequirements[level];
     
+
     if (finalScore >= requirement.threshold) {
-      const badgeToEarn = requirement.badge;
-      if (!userBadges[badgeToEarn]) {
-        setEarnedBadge({
-          type: badgeToEarn,
-          name: requirement.name,
-          level: level
-        });
-        setUserBadges(prev => ({ ...prev, [badgeToEarn]: true }));
-      }
+    const badgeToEarn = requirement.badge; // 'silver' | 'gold' | 'platinum'
+    let nextBadges = { ...userBadges };
+
+    if (!nextBadges[badgeToEarn]) {
+      setEarnedBadge({ type: badgeToEarn, name: requirement.name, level });
+      nextBadges = { ...nextBadges, [badgeToEarn]: true };
     }
+
+    // Check for Python Genius (all three core badges)
+    const hasAllThree = nextBadges.silver && nextBadges.gold && nextBadges.platinum;
+    if (hasAllThree && !nextBadges.genius) {
+        nextBadges.genius = true;
+     setBonusBadge({ type: 'genius', name: 'Python Genius', level: 'genius' });
+    }
+
+    setUserBadges(nextBadges);
+  }
     
     setIsComplete(true);
   };
@@ -325,44 +368,107 @@ const PythonTutoringSystem = () => {
     setEarnedBadge(null);
   };
 
-  const generateCertificate = () => {
-    if (!earnedBadge) return;
-    
-    const certificateContent = `
-CERTIFICATE OF ACHIEVEMENT
+const generateCertificate = async () => {
+  if (!earnedBadge) return;
 
-This certifies that the bearer has successfully completed the
-${earnedBadge.level.toUpperCase()} LEVEL Python Programming Assessment
+  // lazy-load to keep your bundle small
+  const { jsPDF } = await import('jspdf');
+  const autoTable = (await import('jspdf-autotable')).default;
 
-Badge Earned: ${earnedBadge.name}
-Level: ${earnedBadge.level}
-Score: ${score}/${questions.length}
-Date: ${new Date().toLocaleDateString()}
+  const finalScore =
+    userAnswers.length > 0
+      ? userAnswers.filter(a => a.isCorrect).length
+      : score;
 
-Congratulations on your achievement!
-    `.trim();
-    
-    const blob = new Blob([certificateContent], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `python-${earnedBadge.level}-certificate.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
 
-  const canTakeLevel = (level) => {
-    if (level === 'beginner') return true;
-    if (level === 'intermediate') return userBadges.silver;
-    if (level === 'advanced') return userBadges.gold;
-    return false;
-  };
+  // Border
+  doc.setDrawColor(60, 60, 60);
+  doc.setLineWidth(3);
+  doc.rect(24, 24, pageWidth - 48, pageHeight - 48);
+
+  // Title
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(32);
+  doc.text('CERTIFICATE OF ACHIEVEMENT', pageWidth / 2, 110, { align: 'center' });
+
+  // Subtitle
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'normal');
+  doc.text(
+    'This certifies that you have successfully completed the',
+    pageWidth / 2,
+    150,
+    { align: 'center' }
+  );
+
+  // Level line
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(20);
+  doc.text(
+    `${earnedBadge.level.toUpperCase()} LEVEL Python Programming Assessment`,
+    pageWidth / 2,
+    185,
+    { align: 'center' }
+  );
+
+  // Details table
+  const details = [
+    ['Badge', earnedBadge.name],
+    ['Level', earnedBadge.level],
+    ['Score', `${finalScore}/${questions.length}`],
+    ['Date', new Date().toLocaleDateString()],
+  ];
+
+  autoTable(doc, {
+    startY: 220,
+    head: [['Field', 'Value']],
+    body: details,
+    styles: { halign: 'center' },
+    headStyles: { fillColor: [99, 102, 241] }, // indigo-ish
+    margin: { left: pageWidth * 0.2, right: pageWidth * 0.2 },
+  });
+
+  // Footer
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(12);
+  doc.text('Congratulations on your achievement!', pageWidth / 2, pageHeight - 80, { align: 'center' });
+
+  doc.save(`python-${earnedBadge.level}-certificate.pdf`);
+};
+
+
+  // const canTakeLevel = (level) => {
+  //   if (level === 'beginner') return true;
+  //   if (level === 'intermediate') return userBadges.silver;
+  //   if (level === 'advanced') return userBadges.gold;
+  //   return false;
+  // };
+
+const canTakeLevel = (level) => {
+  switch (level) {
+    case 'beginner':
+      // No prereq, but close once Silver is earned
+      return !userBadges.silver;
+    case 'intermediate':
+      // Requires Silver; close once Gold is earned
+      return userBadges.silver && !userBadges.gold;
+    case 'advanced':
+      // Requires Gold; close once Platinum is earned
+      return userBadges.gold && !userBadges.platinum;
+    default:
+      return false;
+  }
+};
 
   const getBadgeIcon = (badgeType) => {
     switch (badgeType) {
       case 'silver': return <Award className="text-gray-400" size={24} />;
       case 'gold': return <Trophy className="text-yellow-500" size={24} />;
       case 'platinum': return <Star className="text-purple-500" size={24} />;
+      case 'genius': return <Crown className="text-amber-500" size={24} />;
       default: return null;
     }
   };
@@ -405,6 +511,10 @@ Congratulations on your achievement!
                 {getBadgeIcon('platinum')}
                 <span>Platinum Badge</span>
               </div>
+               <div className={`flex items-center space-x-2 ${userBadges.genius ? 'text-gray-800' : 'text-gray-400'}`}>
+                {getBadgeIcon('genius')}
+                <span>Python Genius</span>
+              </div>
             </div>
           </div>
 
@@ -425,7 +535,7 @@ Congratulations on your achievement!
                   disabled={!canTakeLevel('beginner')}
                   className="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors disabled:bg-gray-300"
                 >
-                  Start Beginner Test
+                  {userBadges.silver ? 'Completed' : 'Start Beginner Test'}
                 </button>
               </div>
             </div>
@@ -446,7 +556,13 @@ Congratulations on your achievement!
                   disabled={!canTakeLevel('intermediate')}
                   className="w-full bg-yellow-500 text-white py-2 px-4 rounded-lg hover:bg-yellow-600 transition-colors disabled:bg-gray-300"
                 >
-                  {canTakeLevel('intermediate') ? 'Start Intermediate Test' : 'Requires Silver Badge'}
+                {
+                   !userBadges.silver
+                      ? 'Requires Silver Badge'
+                      : userBadges.gold
+                        ? 'Completed'
+                        : 'Start Intermediate Test'
+                  }
                 </button>
               </div>
             </div>
@@ -467,7 +583,13 @@ Congratulations on your achievement!
                   disabled={!canTakeLevel('advanced')}
                   className="w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition-colors disabled:bg-gray-300"
                 >
-                  {canTakeLevel('advanced') ? 'Start Advanced Test' : 'Requires Gold Badge'}
+               {
+                    !userBadges.gold
+                      ? 'Requires Gold Badge'
+                      : userBadges.platinum
+                        ? 'Completed'
+                        : 'Start Advanced Test'
+                }
                 </button>
               </div>
             </div>
@@ -480,6 +602,12 @@ Congratulations on your achievement!
   if (isComplete) {
     const finalScore = userAnswers.length > 0 ? userAnswers.filter(a => a.isCorrect).length : score;
     const passed = finalScore >= levelRequirements[currentLevel].threshold;
+
+      const nextLevelMap = { beginner: 'intermediate', intermediate: 'advanced' };
+      const nextLevelLabel = { beginner: 'Intermediate', intermediate: 'Advanced' };
+      const nextBtnClass =
+        currentLevel === 'beginner' ? 'bg-yellow-500 hover:bg-yellow-600'
+        : 'bg-purple-500 hover:bg-purple-600';
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
@@ -497,6 +625,18 @@ Congratulations on your achievement!
                   <p className="text-green-800">Score: {finalScore}/{questions.length}</p>
                   <p className="text-green-800">Badge: {earnedBadge.name}</p>
                 </div>
+                
+                 {bonusBadge && (
+                   <div className="bg-amber-50 border border-amber-300 rounded-lg p-4 mb-6 flex items-center space-x-3">
+                     {getBadgeIcon('genius')}
+                     <div className="text-amber-800">
+                       <p className="font-semibold">Bonus unlocked: {bonusBadge.name}!</p>
+                       <p className="text-sm">You earned Silver, Gold, and Platinum — welcome to Python Genius 😎</p>
+                     </div>
+                   </div>
+                 )}
+
+
                 <div className="space-y-4">
                   <button
                     onClick={generateCertificate}
@@ -505,6 +645,16 @@ Congratulations on your achievement!
                     <Download size={16} />
                     <span>Download Certificate</span>
                   </button>
+
+              {nextLevelMap[currentLevel] && (
+                 <button
+                   onClick={() => startTest(nextLevelMap[currentLevel])}
+                   className={`w-full ${currentLevel === 'beginner' ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-purple-500 hover:bg-purple-600'} text-white py-2 px-4 rounded-lg transition-colors`}
+                   >
+                     Go to {nextLevelLabel[currentLevel]}
+                  </button>
+                 )}
+
                   <button
                     onClick={resetTest}
                     className="w-full bg-indigo-500 text-white py-2 px-4 rounded-lg hover:bg-indigo-600 transition-colors"

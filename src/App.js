@@ -3,8 +3,7 @@ import './App.css';
 
 import React, { useState } from 'react';
 import { BookOpen, Award, Trophy, Star, Crown, CheckCircle, XCircle, RotateCcw, Download } from 'lucide-react';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
+
 
 
 // Mock GPT API for generating questions

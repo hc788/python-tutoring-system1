@@ -11,6 +11,15 @@
 # production
 /build
 
+# env files
+.env
+.env.*
+*.env
+
+
+# vercel local state
+.vercel
+
 # misc
 .DS_Store
 .env.local

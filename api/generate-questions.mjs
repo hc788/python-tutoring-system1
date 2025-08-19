@@ -1,8 +1,6 @@
 import { strict } from 'assert';
 import OpenAI from 'openai';
 
-// api/generate-questions.mjs  (ESM)
-// api/generate-questions.mjs
 export default async function handler(req, res) {
   try {
     const level = String((req.query.level || 'beginner')).toLowerCase();
@@ -65,32 +63,63 @@ Return ONLY JSON; no prose.
     }
 
     // ✅ Responses API: use text.format for Structured Outputs (json_schema)
+
     const r = await fetch('https://api.openai.com/v1/responses', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        input: prompt,
-        text: {
-          format: {
-            type: 'json_schema',
-             name: 'QuestionSet', 
-             schema,
-             strict: true,
-            json_schema: { name: 'QuestionSet', strict: true, schema },
-          },
-        },
-      }),
-    });
+  method: 'POST',
+  headers: {
+    Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    model: 'gpt-4o-mini',
+    input: prompt,
+    text: {
+      format: {
+        type: 'json_schema',
+        name: 'QuestionSet',
+        schema,     // your JSON schema object
+        strict: true
+      }
+    }
+  }),
+});
+
+
+    // const r = await fetch('https://api.openai.com/v1/responses', {
+    //   method: 'POST',
+    //   headers: {
+    //     Authorization: `Bearer ${apiKey}`,
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify({
+    //     model: 'gpt-4o-mini',
+    //     input: prompt,
+    //     text: {
+    //       format: {
+    //         type: 'json_schema',
+    //          name: 'QuestionSet', 
+    //          schema,
+    //          strict: true,
+    //         json_schema: { name: 'QuestionSet', strict: true, schema },
+    //       },
+    //     },
+    //   }),
+    // });
 
     const body = await r.json();
     if (!r.ok) {
       console.error('OpenAI error:', body);
-      return res.status(500).json({ questions: [], error: 'OpenAI call failed' });
+      return res.status(500).json({
+        questions: [],
+        error: body?.error?.message || 'OpenAI call failed'
+      });
     }
+
+    // const body = await r.json();
+    // if (!r.ok) {
+    //   console.error('OpenAI error:', body);
+    //   return res.status(500).json({ questions: [], error: 'OpenAI call failed' });
+    // }
 
     // Extract the JSON string from Responses API
     let text = '';

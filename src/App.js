@@ -5,7 +5,6 @@ import React, { useState } from 'react';
 import { BookOpen, Award, Trophy, Star, Crown, CheckCircle, XCircle, RotateCcw, Download } from 'lucide-react';
 
 
-
 // Mock GPT API for generating questions
 
 // Calls your Vercel function at /api/generate-questions
